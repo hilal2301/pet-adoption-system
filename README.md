@@ -1,16 +1,75 @@
-# React + Vite
+# 🐾 Pet Adoption System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web-based pet adoption management system built with React.js and Firebase.
 
-Currently, two official plugins are available:
+## 📋 Project Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This platform connects animals in shelters with potential adopters. The system supports three user roles — **Admin**, **Staff (Veteriner)**, and **User** — each with a dedicated interface and role-based access control.
 
-## React Compiler
+## 🚀 Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- 🔐 Firebase Authentication (Login / Register)
+- 👤 Role-based routing (Admin / Staff / User)
+- 🐱 Browse pets available for adoption
+- 📋 Staff panel for managing adoption applications
+- 🛡️ Admin panel for user management
+- 📊 Real-time data with Cloud Firestore
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend:** React.js, Vite
+- **Authentication:** Firebase Auth
+- **Database:** Cloud Firestore
+- **State Management:** Context API
+- **Routing:** React Router DOM
+
+## ⚙️ Installation
+
+    git clone https://github.com/hilal2301/pet-adoption-system.git
+    cd pet-adoption-system
+    npm install
+    npm run dev
+
+## 🔑 Environment Variables
+
+create .env file:
+
+    VITE_FIREBASE_API_KEY=your_api_key
+    VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+    VITE_FIREBASE_PROJECT_ID=your_project_id
+    VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+    VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+    VITE_FIREBASE_APP_ID=your_app_id
+
+## 🌐 Routes
+
+| Route          | Description         |
+| -------------- | ------------------- |
+| `/`            | Login sayfası       |
+| `/register`    | Kayıt sayfası       |
+| `/user`        | Kullanıcı dashboard |
+| `/staff`       | Staff dashboard     |
+| `/profile`     | Profil sayfası      |
+| `/admin`       | Admin dashboard     |
+| `/admin/users` | Kullanıcı yönetimi  |
+
+## 📁 Project Structure
+
+    src/
+    ├── components/
+    │   ├── Navbar.jsx
+    │   └── AdminSidebar.jsx
+    ├── context/
+    │   └── AuthContext.jsx
+    ├── pages/
+    │   ├── Login.jsx
+    │   ├── Register.jsx
+    │   ├── Dashboard.jsx
+    │   ├── UserDashboard.jsx
+    │   ├── StaffDashboard.jsx
+    │   ├── ProfilePage.jsx
+    │   ├── AdminDashboard.jsx
+    │   └── UserManagement.jsx
+    ├── firebase.js
+    ├── App.jsx
+    └── main.jsx

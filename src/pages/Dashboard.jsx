@@ -10,11 +10,17 @@ export default function Dashboard() {
     navigate("/");
   };
 
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Dashboard</h2>
+      const userDoc = await getDoc(doc(db, "Kullanıcılar", user.uid));
 
-      <p>Welcome: {user?.email}</p>
+      if (userDoc.exists()) {
+        const role = userDoc.data().Rol;
+        if (role === "admin") navigate("/admin");
+        else if (role === "veteriner") navigate("/staff");
+        else navigate("/user");
+      } else {
+        navigate("/user");
+      }
+    };
 
       <button onClick={handleLogout}>Logout</button>
     </div>
