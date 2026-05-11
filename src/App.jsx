@@ -1,88 +1,110 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicOnlyRoute from "./components/PublicOnlyRoute";
+import AdminDashboard from "./pages/AdminDashboard";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import ProfilePage from "./pages/ProfilePage";
 import Register from "./pages/Register";
 import StaffDashboard from "./pages/StaffDashboard";
+import Unauthorized from "./pages/Unauthorized";
 import UserDashboard from "./pages/UserDashboard";
-
-import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
+import Vet from "./pages/Vet";
 
-import Vet from './pages/Vet';
-
-function PrivateRoute({ children }) {
-  const { user, loading } = useAuth();
-
-  if (loading) return <p>Yükleniyor...</p>;
-
-  if (!user) return <Navigate to="/" replace />;
-
-  return children;
-}
-<Route path="/" element={<Login />} />
-
-// 🚀 Route yapısı
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public */}
-      <Route path="/" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route
+        path="/"
+        element={
+          <PublicOnlyRoute>
+            <Login />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <PublicOnlyRoute>
+            <Login />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicOnlyRoute>
+            <Register />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* Protected */}
       <Route
         path="/dashboard"
         element={
-          <PrivateRoute>
+          <ProtectedRoute>
             <Dashboard />
-          </PrivateRoute>
+          </ProtectedRoute>
         }
       />
-
       <Route
         path="/user"
         element={
-          <PrivateRoute>
+          <ProtectedRoute allowedRoles={["user", "staff", "admin"]}>
             <UserDashboard />
-          </PrivateRoute>
+          </ProtectedRoute>
         }
       />
-
       <Route
         path="/staff"
         element={
-          <PrivateRoute>
+          <ProtectedRoute allowedRoles={["staff", "admin"]}>
             <StaffDashboard />
-          </PrivateRoute>
+          </ProtectedRoute>
         }
       />
-
-
-
       <Route
         path="/profile"
         element={
-          <PrivateRoute>
+          <ProtectedRoute>
             <ProfilePage />
-          </PrivateRoute>
+          </ProtectedRoute>
         }
       />
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/admin/users" element={<UserManagement />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <UserManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vet"
+        element={
+          <ProtectedRoute allowedRoles={["staff", "admin"]}>
+            <Vet />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="/vet" element={<Vet />} />
-
-      {/* ❗ Hatalı route */}
-      <Route path="*" element={<Navigate to="/" />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-
   );
 }
 
-// 🔥 App
 export default function App() {
   return (
     <AuthProvider>
