@@ -1,88 +1,110 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-
-import Dashboard from "./pages/Dashboard";
+import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
-import ProfilePage from "./pages/ProfilePage";
 import Register from "./pages/Register";
-import StaffDashboard from "./pages/StaffDashboard";
-import UserDashboard from "./pages/UserDashboard";
-
+import ProfilePage from "./pages/ProfilePage";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
+import UserDashboard from "./pages/UserDashboard";
+import StaffDashboard from "./pages/StaffDashboard";
+import Vet from "./pages/Vet";
 
-import Vet from './pages/Vet';
-
-function PrivateRoute({ children }) {
+// Role'e göre doğru sayfaya yönlendir
+function RoleRedirect() {
   const { user, loading } = useAuth();
 
   if (loading) return <p>Yükleniyor...</p>;
-
   if (!user) return <Navigate to="/" replace />;
+
+  if (user.role === "admin") return <Navigate to="/admin" replace />;
+  if (user.role === "vet") return <Navigate to="/vet" replace />;
+  return <Navigate to="/user" replace />;
+}
+
+// Sadece giriş yapmış + doğru role sahip kullanıcıları geçir
+function ProtectedRoute({ children, allowedRoles }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return <p>Yükleniyor...</p>;
+  if (!user) return <Navigate to="/" replace />;
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    // Yetkisi yok — kendi paneline at
+    if (user.role === "admin") return <Navigate to="/admin" replace />;
+    if (user.role === "vet") return <Navigate to="/vet" replace />;
+    return <Navigate to="/user" replace />;
+  }
 
   return children;
 }
-<Route path="/" element={<Login />} />
 
-// 🚀 Route yapısı
 function AppRoutes() {
   return (
-    <Routes>
-      {/* Public */}
-      <Route path="/" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+<Routes>
 
-      {/* Protected */}
-      <Route
-        path="/dashboard"
-        element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
-        }
-      />
+  {/* Public */}
+  <Route path="/" element={<HomePage />} />
+  <Route path="/login" element={<Login />} />
+  <Route path="/register" element={<Register />} />
 
-      <Route
-        path="/user"
-        element={
-          <PrivateRoute>
-            <UserDashboard />
-          </PrivateRoute>
-        }
-      />
+  {/* Login sonrası */}
+  <Route path="/redirect" element={<RoleRedirect />} />
 
-      <Route
-        path="/staff"
-        element={
-          <PrivateRoute>
-            <StaffDashboard />
-          </PrivateRoute>
-        }
-      />
+  {/* Admin */}
+  <Route
+    path="/admin"
+    element={
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <AdminDashboard />
+      </ProtectedRoute>
+    }
+  />
 
+  <Route
+    path="/admin/users"
+    element={
+      <ProtectedRoute allowedRoles={["admin"]}>
+        <UserManagement />
+      </ProtectedRoute>
+    }
+  />
 
+  {/* Vet */}
+  <Route
+    path="/vet"
+    element={
+      <ProtectedRoute allowedRoles={["vet"]}>
+        <Vet />
+      </ProtectedRoute>
+    }
+  />
 
-      <Route
-        path="/profile"
-        element={
-          <PrivateRoute>
-            <ProfilePage />
-          </PrivateRoute>
-        }
-      />
-      <Route path="/admin" element={<AdminDashboard />} />
-      <Route path="/admin/users" element={<UserManagement />} />
+  {/* User */}
+  <Route
+    path="/user"
+    element={
+      <ProtectedRoute allowedRoles={["user"]}>
+        <UserDashboard />
+      </ProtectedRoute>
+    }
+  />
 
-      <Route path="/vet" element={<Vet />} />
+  {/* Profile */}
+  <Route
+    path="/profile"
+    element={
+      <ProtectedRoute allowedRoles={["admin", "vet", "user"]}>
+        <ProfilePage />
+      </ProtectedRoute>
+    }
+  />
 
-      {/* ❗ Hatalı route */}
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
-
+  <Route path="*" element={<Navigate to="/" replace />} />
+</Routes>
   );
 }
 
-// 🔥 App
 export default function App() {
   return (
     <AuthProvider>
