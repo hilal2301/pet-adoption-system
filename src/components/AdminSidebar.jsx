@@ -21,23 +21,23 @@ const AdminSidebar = () => {
       </div>
 
       <nav style={navStyle}>
-        <p style={sectionTitleStyle}>ANA MENU</p>
+        <p style={sectionTitleStyle}>MAIN MENU</p>
 
         <Link to="/admin" style={linkStyle(isActive("/admin"))}>
           Dashboard
         </Link>
 
         <Link to="/admin/users" style={linkStyle(isActive("/admin/users"))}>
-          Kullanici Yonetimi
+          User Management
         </Link>
 
         <Link to="/admin/requests" style={linkStyle(isActive("/admin/requests"))}>
-          Talepler
+          Adoption Requests
         </Link>
 
         <div style={dividerStyle} />
 
-        <p style={sectionTitleStyle}>SISTEM</p>
+        <p style={sectionTitleStyle}>SYSTEM</p>
 
         <button type="button" onClick={handleReturnToLogin} style={exitLinkStyle}>
           Uygulamaya Don
