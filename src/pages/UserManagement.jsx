@@ -72,8 +72,8 @@ const UserManagement = () => {
                             <option value="User">User</option>
                         </select>
                     </div>
-                    <h2 style={titleStyle}>👥 Kullanıcı Yönetimi</h2>
-                    <p style={subtitleStyle}>Sistemdeki kayıtlı tüm kullanıcıları buradan yönetebilir, rollerini düzenleyebilirsiniz.</p>
+                    <h2 style={titleStyle}>👥 User Management</h2>
+                    <p style={subtitleStyle}>You can manage all registered users in the system and edit their roles here.</p>
                 </div>
 
                 {/* Tablo Konteyneri (Gölge ve Beyaz Arka Plan İçin) */}
@@ -82,10 +82,10 @@ const UserManagement = () => {
                         <thead>
                             <tr style={tableHeaderRowStyle}>
                                 <th style={tableHeaderStyle}>ID</th>
-                                <th style={tableHeaderStyle}>Kullanıcı Adı</th>
+                                <th style={tableHeaderStyle}>User name</th>
                                 <th style={tableHeaderStyle}>E-posta</th>
-                                <th style={tableHeaderStyle}>Rol</th>
-                                <th style={tableHeaderStyle}>İşlemler</th>
+                                <th style={tableHeaderStyle}>Role</th>
+                                <th style={tableHeaderStyle}>Processing</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -123,10 +123,10 @@ const UserManagement = () => {
             {isModalOpen && (
                 <div style={modalOverlayStyle}>
                     <div style={modalContentStyle}>
-                        <h3 style={{ color: '#ff8c42', marginBottom: '20px' }}>🐾 Kullanıcıyı Düzenle</h3>
+                        <h3 style={{ color: '#ff8c42', marginBottom: '20px' }}>🐾 Edit user</h3>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={labelStyle}>Kullanıcı Adı</label>
+                            <label style={labelStyle}>User name</label>
                             <input style={modalInputStyle} defaultValue={selectedUser?.name} disabled />
                         </div>
 
