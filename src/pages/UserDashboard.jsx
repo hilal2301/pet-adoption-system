@@ -1,44 +1,121 @@
-import { useAuth } from "../context/useAuth";
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
 import Navbar from "../components/Navbar";
+import { useAuth } from "../context/useAuth";
+import { db } from "../firebase";
 
-const pets = [
-  { id: 1, name: "Kabuş", age: 2, type: "Kedi" },
-  { id: 2, name: "Pamuk", age: 1, type: "Köpek" },
-  { id: 3, name: "Zeytin", age: 3, type: "Kedi" },
-];
+const petCollections = ["Evcil hayvanlar", "Evcil Hayvanlar", "pets"];
+
+const getPetValue = (pet, keys, fallback = "") => {
+  for (const key of keys) {
+    if (pet[key] !== undefined && pet[key] !== null && pet[key] !== "") {
+      return pet[key];
+    }
+  }
+
+  return fallback;
+};
 
 const UserDashboard = () => {
   const { user, loading } = useAuth();
+  const [pets, setPets] = useState([]);
+  const [petsLoading, setPetsLoading] = useState(true);
+  const [petsError, setPetsError] = useState("");
 
-  if (loading) return <p>Yükleniyor...</p>;
-  if (!user) return <p>Lütfen giriş yapın.</p>;
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchPets = async () => {
+      setPetsLoading(true);
+      setPetsError("");
+
+      let lastError = null;
+
+      for (const collectionName of petCollections) {
+        try {
+          const snapshot = await getDocs(collection(db, collectionName));
+          const data = snapshot.docs.map((docSnap) => ({
+            id: docSnap.id,
+            ...docSnap.data(),
+          }));
+
+          if (!isMounted) return;
+
+          if (data.length > 0 || collectionName === petCollections[petCollections.length - 1]) {
+            setPets(data);
+            return;
+          }
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      if (isMounted && lastError) {
+        setPetsError("Hayvanlar yuklenemedi. Firestore koleksiyon izinlerini kontrol edin.");
+      }
+    };
+
+    fetchPets().finally(() => {
+      if (isMounted) {
+        setPetsLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (loading) return <p style={pageMessageStyle}>Yukleniyor...</p>;
+  if (!user) return <p style={pageMessageStyle}>Lutfen giris yapin.</p>;
 
   return (
     <div style={pageWrapperStyle}>
       <Navbar />
+
       <main style={mainContentStyle}>
         <div style={headerSectionStyle}>
-          <h2 style={titleStyle}>🐾 Sahiplendirilebilir Hayvanlar</h2>
-          <p style={subtitleStyle}>Hoş geldin, {user.email}! Sahiplenmek istediğin hayvanı seç.</p>
+          <h2 style={titleStyle}>Sahiplendirilebilir Hayvanlar</h2>
+          <p style={subtitleStyle}>
+            Hos geldin, {user.email}! Sahiplenmek istedigin hayvani sec.
+          </p>
         </div>
+
         <div style={cardGridStyle}>
-          {pets.map(pet => (
-            <div key={pet.id} style={petCardStyle}>
-              <div style={{ fontSize: "52px", marginBottom: "10px" }}>
-                {pet.type === "Kedi" ? "🐱" : "🐶"}
-              </div>
-              <h3 style={{ margin: "0 0 6px 0", color: "#2c3e50", fontSize: "18px" }}>{pet.name}</h3>
-              <p style={{ margin: "0 0 14px 0", color: "#7f8c8d", fontSize: "14px" }}>
-                {pet.age} yaşında · {pet.type}
-              </p>
-              <button
-                style={adoptButtonStyle}
-                onClick={() => alert(`${pet.name} için başvurun alındı! ✅`)}
-              >
-                Sahiplen
-              </button>
-            </div>
-          ))}
+          {petsLoading && <p style={emptyStateStyle}>Hayvanlar yukleniyor...</p>}
+
+          {!petsLoading && petsError && <p style={emptyStateStyle}>{petsError}</p>}
+
+          {!petsLoading && !petsError && pets.length === 0 && (
+            <p style={emptyStateStyle}>Henuz sahiplendirilebilir hayvan kaydi yok.</p>
+          )}
+
+          {!petsLoading &&
+            !petsError &&
+            pets.map((pet) => {
+              const petName = getPetValue(pet, ["isim", "name", "ad"], "Isimsiz");
+              const petType = getPetValue(pet, ["tur", "tür", "type"], "Hayvan");
+              const petAge = getPetValue(pet, ["yas", "yaş", "age"], "?");
+
+              return (
+                <div key={pet.id} style={petCardStyle}>
+                  <div style={petIconStyle}>{petType === "Kedi" ? "Kedi" : "Kopek"}</div>
+
+                  <h3 style={petNameStyle}>{petName}</h3>
+
+                  <p style={petMetaStyle}>
+                    {petAge} yasinda · {petType}
+                  </p>
+
+                  <button
+                    style={adoptButtonStyle}
+                    onClick={() => alert(`${petName} icin basvurun alindi!`)}
+                  >
+                    Sahiplen
+                  </button>
+                </div>
+              );
+            })}
         </div>
       </main>
     </div>
@@ -48,6 +125,11 @@ const UserDashboard = () => {
 const pageWrapperStyle = {
   backgroundColor: "#f4f6f9",
   minHeight: "100vh",
+  fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+};
+
+const pageMessageStyle = {
+  padding: "24px",
   fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 };
 
@@ -92,6 +174,29 @@ const petCardStyle = {
   width: "180px",
 };
 
+const petIconStyle = {
+  backgroundColor: "#eef2ff",
+  borderRadius: "999px",
+  color: "#4f46e5",
+  fontSize: "14px",
+  fontWeight: "700",
+  margin: "0 auto 12px",
+  padding: "12px",
+  width: "72px",
+};
+
+const petNameStyle = {
+  margin: "0 0 6px 0",
+  color: "#2c3e50",
+  fontSize: "18px",
+};
+
+const petMetaStyle = {
+  margin: "0 0 14px 0",
+  color: "#7f8c8d",
+  fontSize: "14px",
+};
+
 const adoptButtonStyle = {
   backgroundColor: "#1cc88a",
   color: "white",
@@ -101,6 +206,15 @@ const adoptButtonStyle = {
   cursor: "pointer",
   fontSize: "14px",
   fontWeight: "600",
+};
+
+const emptyStateStyle = {
+  backgroundColor: "white",
+  borderRadius: "12px",
+  boxShadow: "0 4px 6px rgba(0,0,0,0.05)",
+  color: "#7f8c8d",
+  padding: "24px",
+  width: "100%",
 };
 
 export default UserDashboard;

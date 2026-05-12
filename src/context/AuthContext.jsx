@@ -17,8 +17,57 @@ const roleRedirects = {
 };
 
 const normalizeRole = (role) => {
-  if (["admin", "staff", "user"].includes(role)) return role;
+  const normalized = String(role || "").trim().toLowerCase();
+  if (normalized === "admin") return "admin";
+  if (["staff", "veteriner", "vet"].includes(normalized)) return "staff";
+  if (["user", "kullanici", "kullanıcı"].includes(normalized)) return "user";
   return "user";
+};
+
+const getProfile = async (uid, email) => {
+  const profileRef = doc(db, "users", uid);
+  const profileSnap = await getDoc(profileRef);
+
+  if (profileSnap.exists()) {
+    const data = profileSnap.data();
+    return {
+      ref: profileRef,
+      exists: true,
+      profile: {
+        uid,
+        email,
+        ...data,
+        role: normalizeRole(data.role ?? data.Rol),
+      },
+    };
+  }
+
+  const legacyProfileRef = doc(db, "Kullanıcılar", uid);
+  const legacyProfileSnap = await getDoc(legacyProfileRef);
+
+  if (legacyProfileSnap.exists()) {
+    const data = legacyProfileSnap.data();
+    return {
+      ref: legacyProfileRef,
+      exists: true,
+      profile: {
+        uid,
+        email,
+        ...data,
+        role: normalizeRole(data.role ?? data.Rol),
+      },
+    };
+  }
+
+  return {
+    ref: profileRef,
+    exists: false,
+    profile: {
+      uid,
+      email,
+      role: "user",
+    },
+  };
 };
 
 export function AuthProvider({ children }) {
@@ -43,20 +92,14 @@ export function AuthProvider({ children }) {
 
       try {
         await authPersistenceReady;
-        const profileRef = doc(db, "users", currentUser.uid);
-        const profileSnap = await getDoc(profileRef);
-
-        let profile = {
-          uid: currentUser.uid,
-          email: currentUser.email,
-          role: "user",
-        };
+        const { ref: profileRef, exists, profile } = await getProfile(
+          currentUser.uid,
+          currentUser.email
+        );
 
         // Existing Auth accounts may predate Firestore profiles; create the
         // minimum role document so route guards never rely on UI-only state.
-        if (profileSnap.exists()) {
-          profile = { ...profile, ...profileSnap.data() };
-        } else {
+        if (!exists) {
           await setDoc(profileRef, {
             ...profile,
             createdAt: serverTimestamp(),
@@ -85,8 +128,8 @@ export function AuthProvider({ children }) {
     setAuthError("");
     await authPersistenceReady;
     const credential = await signInWithEmailAndPassword(auth, email, password);
-    const profileSnap = await getDoc(doc(db, "users", credential.user.uid));
-    const nextRole = normalizeRole(profileSnap.data()?.role);
+    const { profile } = await getProfile(credential.user.uid, credential.user.email);
+    const nextRole = normalizeRole(profile.role);
     return { user: credential.user, role: nextRole };
   }, []);
 
