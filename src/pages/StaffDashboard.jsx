@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-
 import { collection, getDocs } from "firebase/firestore";
-
-import { db } from "../firebase";
-
-import { useAuth } from "../context/AuthContext";
-
+import { useAuth } from "../context/useAuth";
 import Navbar from "../components/Navbar";
+import { db } from "../firebase";
 
 
 
@@ -259,7 +255,5 @@ const tableCellStyle = {
   color: "#2c3e50",
 
 };
-
-
 
 export default StaffDashboard;

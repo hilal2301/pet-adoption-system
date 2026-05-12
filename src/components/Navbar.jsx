@@ -1,6 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { useAuth } from "../context/useAuth";
 
 const navItems = [
   { label: "🐾 Hayvanlar", path: "/user" },
@@ -11,9 +10,10 @@ const navItems = [
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await logout();
     navigate("/");
   };
 

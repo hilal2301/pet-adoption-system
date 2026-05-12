@@ -1,31 +1,36 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
+import { useAuth } from "../context/useAuth";
 
 export default function Dashboard() {
-  const { user, loading } = useAuth();
+  const { user, logout, loading, getDefaultRedirect } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkRole = async () => {
-      if (!user) return;
+    if (!loading && user) {
+      navigate(getDefaultRedirect(), { replace: true });
+    }
+  }, [getDefaultRedirect, loading, navigate, user]);
 
-      const userDoc = await getDoc(doc(db, "Kullanıcılar", user.uid));
+  const handleLogout = async () => {
+    await logout();
+    navigate("/", { replace: true });
+  };
 
-      if (userDoc.exists()) {
-        const role = userDoc.data().Rol;
-        if (role === "admin") navigate("/admin");
-        else if (role === "veteriner") navigate("/staff");
-        else navigate("/user");
-      } else {
-        navigate("/user");
-      }
-    };
+  if (loading) {
+    return (
+      <div className="route-loading" role="status" aria-live="polite">
+        <span className="spinner" />
+        Loading dashboard...
+      </div>
+    );
+  }
 
-    if (!loading) checkRole();
-  }, [user, loading]);
-
-  return <p>Yönlendiriliyor...</p>;
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Dashboard</h2>
+      <p>Welcome: {user?.email}</p>
+      <button onClick={handleLogout}>Logout</button>
+    </div>
+  );
 }
